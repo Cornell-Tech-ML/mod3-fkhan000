@@ -168,11 +168,25 @@ def tensor_map(
         in_shape: Shape,
         in_strides: Strides,
     ) -> None:
-        # TODO: Implement for Task 3.1.
-        raise NotImplementedError("Need to implement for Task 3.1")
+        
+        if np.array_equal(out_strides, in_strides) and np.array_equal(out_shape, in_shape):
+            for i in prange(len(out)):
+                out[i] = fn(in_storage[i])
+        else:
+            # for each index in the output
+            for ordinal_pos in prange(len(out)):
+                out_index = np.empty_like(out_shape, dtype=np.int32)
+                in_index = np.empty_like(in_shape, dtype=np.int32)
+                # we get the multidim index
+                to_index(ordinal_pos, out_shape, out_index)
+                # broadcast it to get the corresponding index in the input
+                broadcast_index(out_index, out_shape, in_shape, in_index)
+                # get the value of the input
+                x = in_storage[index_to_position(in_index, in_strides)]
+                # and then fill output with fn(x)
+                out[ordinal_pos] = fn(x)
 
     return njit(_map, parallel=True)  # type: ignore
-
 
 def tensor_zip(
     fn: Callable[[float, float], float],
@@ -208,8 +222,32 @@ def tensor_zip(
         b_shape: Shape,
         b_strides: Strides,
     ) -> None:
-        # TODO: Implement for Task 3.1.
-        raise NotImplementedError("Need to implement for Task 3.1")
+        
+        if (
+            np.array_equal(out_strides, a_strides)
+            and np.array_equal(out_strides, b_strides)
+            and np.array_equal(out_shape, a_shape)
+            and np.array_equal(out_shape, b_shape)
+        ):
+            for i in prange(len(out)):
+                out[i]  = fn(a_storage[i], b_storage[i])
+        else:
+
+            # for each index in the output
+            for i in prange(len(out)):
+                out_index = np.empty_like(out_shape, dtype=np.int32)
+                a_index = np.empty_like(a_shape, dtype=np.int32)
+                b_index = np.empty_like(b_shape, dtype=np.int32)
+                # we obtain the multidim index
+                to_index(i, out_shape, out_index)
+                # broadcast it to the corresponding indices in a and b
+                broadcast_index(out_index, out_shape, a_shape, a_index)
+                broadcast_index(out_index, out_shape, b_shape, b_index)
+                # and then get the values of a and b at those indices
+                x_a = a_storage[index_to_position(a_index, a_strides)]
+                x_b = b_storage[index_to_position(b_index, b_strides)]
+                # finally we fill in the output index with fn(x_a, x_b)
+                out[i] = fn(x_a, x_b)
 
     return njit(_zip, parallel=True)  # type: ignore
 
@@ -244,8 +282,18 @@ def tensor_reduce(
         a_strides: Strides,
         reduce_dim: int,
     ) -> None:
-        # TODO: Implement for Task 3.1.
-        raise NotImplementedError("Need to implement for Task 3.1")
+        for i in prange(len(out)):
+
+            out_index = np.empty_like(out_shape, dtype=np.int32)
+            to_index(i, out_shape, out_index)
+            a_index = out_index.copy()
+            out_ordinal = index_to_position(out_index, out_strides)
+            a_ordinal = index_to_position(a_index, a_strides)
+            start = out[out_ordinal]
+            for j in prange(a_shape[reduce_dim]):
+                # Use a_strides[reduce_dim] to iterate, no need to calculate by index_to_position
+                start = fn(a_storage[int(a_ordinal + j * a_strides[reduce_dim])], start)
+            out[out_ordinal] = start
 
     return njit(_reduce, parallel=True)  # type: ignore
 
