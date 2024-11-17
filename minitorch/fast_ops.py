@@ -341,11 +341,23 @@ def _tensor_matrix_multiply(
         None : Fills in `out`
 
     """
+    #(b_a, n, k) x (b_b, k, m) => (out_shape[0], n, m)
     a_batch_stride = a_strides[0] if a_shape[0] > 1 else 0
     b_batch_stride = b_strides[0] if b_shape[0] > 1 else 0
+    
+    N, K, M = a_shape[-2], a_shape[-1], b_shape[-1]
 
-    # TODO: Implement for Task 3.2.
-    raise NotImplementedError("Need to implement for Task 3.2")
+    for i in prange(out_shape[0]):
+        for n in prange(N):
+            for m in prange(M):
+                for k in prange(K):
+                    out_ordinal = i*out_strides[0] + n*out_strides[1] + m*out_strides[2]
+                    a_ordinal = i*a_batch_stride + n*a_strides[1] + k*a_strides[2]
+                    b_ordinal = i*b_batch_stride + k*b_strides[1] + m*b_strides[2]
+                    
+                    out[out_ordinal] += a_storage[a_ordinal] * b_storage[b_ordinal]
+
+    
 
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)
