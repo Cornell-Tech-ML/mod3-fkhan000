@@ -1,5 +1,9 @@
 import networkx as nx
 from dataclasses import dataclass
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import minitorch
 
 if hasattr(minitorch, "Scalar"):
