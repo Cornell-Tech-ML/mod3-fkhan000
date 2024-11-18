@@ -87,3 +87,9 @@ Below is a graph showing the amount of time taken to perform matrix multiplicati
 <img width="331" alt="image" src="https://github.com/user-attachments/assets/ba1953a2-6bba-4a09-aaa0-44b56d927843">
 
 As can be seen, especially for large batches, performing the operation on a GPU is significantly faster.
+
+Finally, here you can see the results of the autograder tests for tasks 3_3 and 3_4.
+<img width="625" alt="task3_3" src="https://github.com/user-attachments/assets/fc5b095c-f9d7-43b7-bfd2-ad0c4e363ee0">
+
+<img width="619" alt="task3_4" src="https://github.com/user-attachments/assets/5aafeb44-edd2-4f8f-b8eb-17b4ff1e302c">
+
