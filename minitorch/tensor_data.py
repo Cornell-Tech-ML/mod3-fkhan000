@@ -47,6 +47,7 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
         out_index[i] = int(cur_ord % sh)
         cur_ord = cur_ord // sh
 
+
 def broadcast_index(
     big_index: Index, big_shape: Shape, shape: Shape, out_index: OutIndex
 ) -> None:
@@ -118,7 +119,7 @@ class TensorData:
         self._shape = array(shape)
         self.strides = strides
         self.dims = len(strides)
-        self.shape = shape    
+        self.shape = shape
         size = 1
         for i in shape:
             size *= i
