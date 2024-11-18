@@ -359,16 +359,15 @@ def _sum_practice(out: Storage, a: Storage, size: int) -> None:
     # value in the slot that's 2 spaces away from them and so on.
     # In the end we will have the summed up value in cache[0].
 
-    num_rounds = 5
-    if i < size:
-        # for each round of summing
-        for k in range(1, num_rounds):
-            # if your position in the block is divisible by 2**k, sum
-            # the person that's 2**(k-1) slots away from you
-            if pos % 2**k == 0:
-                cache[pos] += cache[pos + 2 ** (k - 1)]
-                # we then update the shared array for all threads
-                cuda.syncthreads()
+    # for each round of summing
+    n = 1
+    while n < BLOCK_DIM:
+        # if your position in the block is divisible by 2**n, sum
+        # the person that's n slots away from you
+        if pos % (2 * n) == 0:
+            cache[pos] += cache[pos + n]
+            # we then update the shared array for all threads
+            cuda.syncthreads()
     # finally we have one of the threads in each block assign cache[0]
     # to out
     if pos == 0:
@@ -460,15 +459,14 @@ def tensor_reduce(
                 # to themselves and their neighbor and then have a quarter of the threads in the block
                 # apply it to themselves and the values corresponding to the threads that went through
                 # the first round
-                num_rounds = 10
-                for k in range(1, num_rounds):
-                    if pos % 2**k == 0:
-                        cache[pos] = fn(cache[pos], cache[pos + 2 ** (k - 1)])
+                n = 1
+                while n < BLOCK_DIM:
+                    if pos % (2 * n) == 0:
+                        cache[pos] = fn(cache[pos], cache[pos + n])
                         cuda.syncthreads()
             # we then have one thread in our block
             # assign the reduced value to the corresponding value in out
             if pos == 0:
-                # out[out_ordinal] = cache[0]
                 out[out_pos] = cache[0]
 
     return jit(_reduce)  # type: ignore
