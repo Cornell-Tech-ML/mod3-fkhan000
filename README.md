@@ -80,3 +80,10 @@ Below are my training logs for CPU vs GPU, with each row representing the same d
 
 
 As can be seen, the average time per epoch on the CPU is roughly .17 seconds and on the GPU it is roughly 1.9 seconds.
+
+
+Below is a graph showing the amount of time taken to perform matrix multiplication on a CPU vs a GPU:
+
+<img width="331" alt="image" src="https://github.com/user-attachments/assets/ba1953a2-6bba-4a09-aaa0-44b56d927843">
+
+As can be seen, especially for large batches, performing the operation on a GPU is significantly faster.
