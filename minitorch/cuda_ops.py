@@ -596,7 +596,7 @@ def _tensor_matrix_multiply(
     # Batch dimension - fixed
     batch = cuda.blockIdx.z
 
-    BLOCK_DIM = 16
+    BLOCK_DIM = 32
     # we initialize the shared memory to store copies of the corresponding
     # pair of submatrices of a and b which we will call A and B
     a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
