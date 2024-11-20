@@ -36,13 +36,12 @@ The files that will be synced are:
 
 Below are my training logs for CPU vs GPU, with each row representing the same dataset.
 
-
 ---
 
 ### Simple Dataset
 <div style="display: flex; align-items: center;">
   <div style="text-align: center; margin-right: 20px;">
-    <img width="340" alt="simple_gpu_log" src="https://github.com/user-attachments/assets/8133d8be-0c0c-46bc-9ce3-180872541128">
+        <img width="340" alt="simple_gpu_log" src="https://github.com/user-attachments/assets/32edb2f0-202e-4791-b315-0a0876707676">
     <p><strong>GPU</strong></p>
   </div>
   <div style="text-align: center;">
