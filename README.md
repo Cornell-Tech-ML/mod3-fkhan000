@@ -53,10 +53,11 @@ Below are my training logs for CPU vs GPU, with each row representing the same d
 
 ---
 
+
 ### XOR Dataset
 <div style="display: flex; align-items: center;">
   <div style="text-align: center; margin-right: 20px;">
-        <img width="356" alt="xor_gpu_log" src="https://github.com/user-attachments/assets/8278c8fa-1f25-4a11-99e8-f2ac00061531">
+        <img width="340" alt="gpu_xor_log" src="https://github.com/user-attachments/assets/60d1db6f-c450-4cf0-a82b-4ec7855ca91c">
     <p><strong>GPU</strong></p>
   </div>
   <div style="text-align: center;">
