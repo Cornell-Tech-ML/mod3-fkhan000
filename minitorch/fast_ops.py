@@ -376,6 +376,7 @@ def _tensor_matrix_multiply(
                 out_ordinal = (
                     i * out_strides[0] + n * out_strides[1] + m * out_strides[2]
                 )
+                tmp = 0
                 for k in prange(K):
                     # and then same idea for a and b ordinal positions
                     a_ordinal = i * a_batch_stride + n * a_strides[1] + k * a_strides[2]
@@ -384,7 +385,8 @@ def _tensor_matrix_multiply(
                     # then update the value of out[out_ordinal]
                     # in this loop we are calculating the dot product between the nth "row" of
                     # a and the mth column of b
-                    out[out_ordinal] += a_storage[a_ordinal] * b_storage[b_ordinal]
+                    tmp += a_storage[a_ordinal] * b_storage[b_ordinal]
+                out[out_ordinal] = tmp
 
 
 tensor_matrix_multiply = njit(_tensor_matrix_multiply, parallel=True)

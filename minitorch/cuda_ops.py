@@ -368,6 +368,7 @@ def _sum_practice(out: Storage, a: Storage, size: int) -> None:
             cache[pos] += cache[pos + n]
             # we then update the shared array for all threads
             cuda.syncthreads()
+        n *= 2
     # finally we have one of the threads in each block assign cache[0]
     # to out
     if pos == 0:
@@ -460,10 +461,12 @@ def tensor_reduce(
                 # apply it to themselves and the values corresponding to the threads that went through
                 # the first round
                 n = 1
+
                 while n < BLOCK_DIM:
                     if pos % (2 * n) == 0:
                         cache[pos] = fn(cache[pos], cache[pos + n])
                         cuda.syncthreads()
+                    n *= 2
             # we then have one thread in our block
             # assign the reduced value to the corresponding value in out
             if pos == 0:
@@ -598,8 +601,8 @@ def _tensor_matrix_multiply(
     BLOCK_DIM = 32
     # we initialize the shared memory to store copies of the corresponding
     # pair of submatrices of a and b which we will call A and B
-    a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
-    b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
+    a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
+    b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
 
     # The final position c[i, j] calculated by each thread
     i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
