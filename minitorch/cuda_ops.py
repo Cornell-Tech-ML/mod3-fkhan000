@@ -307,8 +307,9 @@ def tensor_zip(
             # and then get the values of a and b at those indices
             x_a = a_storage[index_to_position(a_index, a_strides)]
             x_b = b_storage[index_to_position(b_index, b_strides)]
+            out_ordinal = index_to_position(out_index, out_strides)
             # finally we fill in the output index with fn(x_a, x_b)
-            out[i] = fn(x_a, x_b)
+            out[out_ordinal] = fn(x_a, x_b)
 
     return cuda.jit()(_zip)  # type: ignore
 
@@ -443,8 +444,6 @@ def tensor_reduce(
         if out_pos < out_size:
             # we get the multidim index for out_pos
             to_index(out_pos, out_shape, out_index)
-
-            # out_ordinal = index_to_position(out_index, out_strides)
             # we then map each thread to an ordinal position in a
             out_index[reduce_dim] = out_index[reduce_dim] * BLOCK_DIM + cuda.threadIdx.x
             a_ordinal = index_to_position(out_index, a_strides)
@@ -461,7 +460,6 @@ def tensor_reduce(
                 # apply it to themselves and the values corresponding to the threads that went through
                 # the first round
                 n = 1
-
                 while n < BLOCK_DIM:
                     if pos % (2 * n) == 0:
                         cache[pos] = fn(cache[pos], cache[pos + n])
@@ -472,7 +470,7 @@ def tensor_reduce(
             if pos == 0:
                 out[out_pos] = cache[0]
 
-    return jit(_reduce)  # type: ignore
+    return cuda.jit(_reduce)  # type: ignore
 
 
 def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
@@ -533,7 +531,7 @@ def _mm_practice(out: Storage, a: Storage, b: Storage, size: int) -> None:
         out[local_i * size + local_j] = tmp
 
 
-jit_mm_practice = jit(_mm_practice)
+jit_mm_practice = cuda.jit(_mm_practice)
 
 
 def mm_practice(a: Tensor, b: Tensor) -> TensorData:
@@ -601,8 +599,8 @@ def _tensor_matrix_multiply(
     BLOCK_DIM = 32
     # we initialize the shared memory to store copies of the corresponding
     # pair of submatrices of a and b which we will call A and B
-    a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
-    b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float32)
+    a_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
+    b_shared = cuda.shared.array((BLOCK_DIM, BLOCK_DIM), numba.float64)
 
     # The final position c[i, j] calculated by each thread
     i = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
@@ -617,7 +615,7 @@ def _tensor_matrix_multiply(
 
     N, M, K = a_shape[-2], b_shape[-1], a_shape[-1]
 
-    tmp = 0
+    tmp = 0.0
     # since we can't hold the entire matrix in shared memory
     # we will perform mini matrix multiplies with the submatrices
     # that we can load into memory and then add them up in the end
@@ -674,4 +672,4 @@ def _tensor_matrix_multiply(
     #    c) Compute the dot produce for position c[i, j]
 
 
-tensor_matrix_multiply = jit(_tensor_matrix_multiply)
+tensor_matrix_multiply = cuda.jit(_tensor_matrix_multiply)
